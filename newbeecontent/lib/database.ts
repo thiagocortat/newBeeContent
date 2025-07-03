@@ -4,11 +4,12 @@
  */
 
 import { PrismaClient, Prisma } from '@prisma/client'
+import { withAccelerate } from '@prisma/extension-accelerate'
 import { config } from './config'
 
 // Singleton do Prisma Client
 const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
+  prisma: any | undefined
 }
 
 // Configurações específicas por tipo de banco
@@ -38,7 +39,18 @@ const getDatabaseConfig = (): Prisma.PrismaClientOptions => {
 }
 
 // Criar instância do Prisma com configuração adequada
-export const prisma = globalForPrisma.prisma ?? new PrismaClient(getDatabaseConfig())
+const createPrismaClient = () => {
+  const client = new PrismaClient(getDatabaseConfig())
+  
+  // Se estiver usando Prisma Accelerate (URL começa com prisma:// ou prisma+postgres://), aplicar extensão
+  if (config.database.url.startsWith('prisma://') || config.database.url.startsWith('prisma+postgres://')) {
+    return client.$extends(withAccelerate())
+  }
+  
+  return client
+}
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient() as any
 
 if (config.isDevelopment) {
   globalForPrisma.prisma = prisma
