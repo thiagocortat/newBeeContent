@@ -21,7 +21,8 @@ export default function LoginPage() {
         router.push('/dashboard')
       }
     } catch (error) {
-      alert('Login inválido')
+      console.error('Erro no login:', error)
+      alert('Erro ao fazer login')
     } finally {
       setLoading(false)
     }

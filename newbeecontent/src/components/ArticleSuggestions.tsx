@@ -10,6 +10,13 @@ interface ArticleSuggestion {
   estimatedReadTime: string
 }
 
+interface Hotel {
+  id: string
+  name: string
+  city: string
+  state: string
+}
+
 interface ArticleSuggestionsProps {
   onSelectSuggestion: (suggestion: ArticleSuggestion) => void
 }
@@ -18,7 +25,7 @@ export default function ArticleSuggestions({ onSelectSuggestion }: ArticleSugges
   const [suggestions, setSuggestions] = useState<ArticleSuggestion[]>([])
   const [loading, setLoading] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const [userHotel, setUserHotel] = useState<any>(null)
+  const [userHotel, setUserHotel] = useState<Hotel | null>(null)
 
   async function handleGenerateSuggestions() {
     setLoading(true)
@@ -43,10 +50,15 @@ export default function ArticleSuggestions({ onSelectSuggestion }: ArticleSugges
       
       setSuggestions(response.data.suggestions)
       setShowSuggestions(true)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao gerar sugestões:', error)
-      if (error.response?.status === 404) {
-        alert('Nenhum hotel encontrado. Configure um hotel primeiro na seção de configurações.')
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number } }
+        if (axiosError.response?.status === 404) {
+          alert('Nenhum hotel encontrado. Configure um hotel primeiro na seção de configurações.')
+        } else {
+          alert('Erro ao gerar sugestões de artigos. Tente novamente.')
+        }
       } else {
         alert('Erro ao gerar sugestões de artigos. Tente novamente.')
       }

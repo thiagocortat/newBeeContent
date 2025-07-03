@@ -13,7 +13,7 @@ export default function BackToDashboardButton() {
       try {
         await axios.get('/api/me')
         setIsLoggedIn(true)
-      } catch (error) {
+      } catch {
         setIsLoggedIn(false)
       } finally {
         setLoading(false)

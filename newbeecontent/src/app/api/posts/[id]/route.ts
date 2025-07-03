@@ -133,7 +133,14 @@ export async function PUT(
     const scheduleDate = scheduledAt ? new Date(scheduledAt) : null
     const shouldPublishNow = !scheduleDate || scheduleDate <= now
 
-    const updateData: any = {
+    const updateData: {
+      title: string
+      content: string
+      slug: string
+      imageUrl?: string
+      publishedAt?: Date
+      scheduledAt?: Date
+    } = {
       title,
       content,
       slug,

@@ -48,9 +48,15 @@ export default function DashboardPostList() {
       await axios.delete(`/api/posts/${deleteModal.post.id}`)
       setPosts(posts.filter(p => p.id !== deleteModal.post!.id))
       setDeleteModal({ isOpen: false, post: null })
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao deletar post:', error)
-      alert(error.response?.data?.error || 'Erro ao deletar post')
+      const errorMessage = error instanceof Error && 'response' in error && 
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'error' in error.response.data
+        ? String(error.response.data.error)
+        : 'Erro ao deletar post'
+      alert(errorMessage)
     } finally {
       setDeleting(false)
     }
@@ -65,9 +71,13 @@ export default function DashboardPostList() {
         ])
         setPosts(postsRes.data.posts || [])
         setUser(userRes.data)
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Erro ao carregar dados:', error)
-        if (error.response?.status === 401) {
+        const isUnauthorized = error instanceof Error && 'response' in error &&
+          typeof error.response === 'object' && error.response !== null &&
+          'status' in error.response && error.response.status === 401
+        
+        if (isUnauthorized) {
           console.log('Usuário não autenticado, redirecionando para login')
           router.push('/login')
           return
@@ -260,7 +270,7 @@ export default function DashboardPostList() {
             </div>
             
             <p className="text-gray-700 mb-6">
-              Tem certeza que deseja deletar o post <strong>"{deleteModal.post?.title}"</strong>?
+              Tem certeza que deseja deletar o post <strong>&quot;{deleteModal.post?.title}&quot;</strong>?
             </p>
             
             <div className="flex gap-3 justify-end">

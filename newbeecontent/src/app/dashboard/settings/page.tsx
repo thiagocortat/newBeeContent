@@ -3,8 +3,16 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 
+interface Hotel {
+  autoGeneratePosts: boolean
+  postFrequency?: string
+  themePreferences?: string
+  maxMonthlyPosts?: number
+  lastAutoPostAt?: string
+}
+
 export default function HotelAutomationSettings() {
-  const [hotel, setHotel] = useState<any>(null)
+  const [hotel, setHotel] = useState<Hotel | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 

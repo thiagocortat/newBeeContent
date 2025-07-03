@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 /**
  * Props for the ImageUpload component
@@ -110,10 +111,11 @@ export default function ImageUpload({
             <strong>URL da imagem:</strong> {preview}
           </div>
           <div className="relative">
-            <img 
+            <Image 
               src={preview} 
               alt="Imagem carregada" 
-              loading="lazy"
+              width={800}
+              height={256}
               className="w-full max-h-64 object-cover rounded-lg shadow-sm transition-opacity duration-200" 
               style={{ opacity: imageLoaded ? 1 : 0.7 }}
               onLoad={() => {
@@ -126,6 +128,7 @@ export default function ImageUpload({
                 setImageError(true)
                 setImageLoaded(false)
               }}
+              unoptimized
             />
             {!imageLoaded && !imageError && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">

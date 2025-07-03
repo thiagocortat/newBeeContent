@@ -8,6 +8,25 @@ import ReactMarkdown from 'react-markdown'
 import ImageUpload from '@/components/ImageUpload'
 import ArticleSuggestions from '@/components/ArticleSuggestions'
 
+interface ArticleSuggestion {
+  title: string
+  description: string
+  keywords: string[]
+  estimatedReadTime: string
+}
+
+interface PostContent {
+  title?: string
+  content?: string
+  seoDescription?: string
+  slug?: string
+}
+
+interface ApiResponse {
+  postContent?: PostContent
+  imageUrl?: string
+}
+
 export default function NewPostPage() {
   const router = useRouter()
   const [title, setTitle] = useState('')
@@ -26,7 +45,7 @@ export default function NewPostPage() {
   const [generatingImage, setGeneratingImage] = useState(false)
 
   // Função para lidar com a seleção de uma sugestão de artigo
-  async function handleSelectSuggestion(suggestion: any) {
+  async function handleSelectSuggestion(suggestion: ArticleSuggestion) {
     setLoading(true)
     
     try {
@@ -46,7 +65,7 @@ O artigo deve ter:
 - Mínimo de 500 palavras`
 
       // Gerar conteúdo completo usando a API
-      const response = await axios.post('/api/generate-ideas', { prompt: detailedPrompt })
+      const response = await axios.post<ApiResponse>('/api/generate-ideas', { prompt: detailedPrompt })
       
       if (response.data && response.data.postContent) {
         const result = response.data.postContent
@@ -62,7 +81,7 @@ O artigo deve ter:
         // Limpar o campo base já que preenchemos os campos finais
         setBaseContent('')
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro ao gerar artigo:', error)
       alert('Erro ao gerar artigo completo. Tente novamente.')
     } finally {
@@ -78,7 +97,7 @@ O artigo deve ter:
 
     setLoading(true)
     try {
-      const response = await axios.post('/api/generate-ideas', { prompt: baseContent })
+      const response = await axios.post<ApiResponse>('/api/generate-ideas', { prompt: baseContent })
       
       // Verificar se a resposta tem a estrutura esperada
       if (!response.data || !response.data.postContent) {
@@ -106,15 +125,19 @@ O artigo deve ter:
         alert('A IA não conseguiu gerar conteúdo. Tente reformular sua ideia base.')
       }
       
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro ao gerar conteúdo:', error)
       
       // Mensagem de erro mais específica
-      if (error.response?.status === 401) {
-        alert('Erro de autenticação. Faça login novamente.')
-      } else if (error.response?.status === 500) {
-        alert('Erro interno do servidor. Tente novamente em alguns minutos.')
-      } else if (error.message?.includes('inválida')) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          alert('Erro de autenticação. Faça login novamente.')
+        } else if (error.response?.status === 500) {
+          alert('Erro interno do servidor. Tente novamente em alguns minutos.')
+        } else {
+          alert('Erro ao gerar conteúdo com IA. Verifique sua conexão e tente novamente.')
+        }
+      } else if (error instanceof Error && error.message?.includes('inválida')) {
         alert('Erro na resposta da IA: ' + error.message)
       } else {
         alert('Erro ao gerar conteúdo com IA. Verifique sua conexão e tente novamente.')
@@ -135,7 +158,7 @@ O artigo deve ter:
       const imagePrompt = `Create a professional blog post header image for: ${title || postContent.slice(0, 100)}. Modern, clean, high-quality, suitable for a blog article.`
       
       console.log('Gerando imagem com prompt:', imagePrompt)
-      const response = await axios.post('/api/generate-image', { prompt: imagePrompt })
+      const response = await axios.post<ApiResponse>('/api/generate-image', { prompt: imagePrompt })
       console.log('Resposta da API:', response.data)
       
       if (response.data.imageUrl) {

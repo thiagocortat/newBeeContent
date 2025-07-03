@@ -6,11 +6,21 @@ import axios from 'axios'
 import ReactMarkdown from 'react-markdown'
 import ImageUpload from '@/components/ImageUpload'
 
+interface Post {
+  id: string
+  title: string
+  slug: string
+  content: string
+  imageUrl?: string
+  publishedAt?: string
+  scheduledAt?: string
+}
+
 export default function EditPostPage() {
   const { id } = useParams()
   const router = useRouter()
 
-  const [post, setPost] = useState<any>(null)
+  const [post, setPost] = useState<Post | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deleteModal, setDeleteModal] = useState(false)
@@ -43,9 +53,15 @@ export default function EditPostPage() {
       await axios.delete(`/api/posts/${id}`)
       alert('Post deletado com sucesso!')
       router.push('/dashboard')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao deletar post:', error)
-      alert(error.response?.data?.error || 'Erro ao deletar post')
+      const errorMessage = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'error' in error.response.data
+        ? String(error.response.data.error)
+        : 'Erro ao deletar post'
+      alert(errorMessage)
     } finally {
       setDeleting(false)
       setDeleteModal(false)
@@ -387,7 +403,7 @@ export default function EditPostPage() {
             </div>
             
             <p className="text-gray-700 mb-6">
-              Tem certeza que deseja deletar o post <strong>"{post?.title}"</strong>?
+              Tem certeza que deseja deletar o post <strong>&quot;{post?.title}&quot;</strong>?
             </p>
             
             <div className="flex gap-3 justify-end">

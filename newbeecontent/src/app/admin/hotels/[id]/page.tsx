@@ -95,8 +95,9 @@ export default function AdminHotelDetailPage() {
       }
 
       setHotel({ ...hotel, autoGeneratePosts: !hotel.autoGeneratePosts })
-    } catch (err: any) {
-      alert(err.message)
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
+      alert(errorMessage)
       console.error(err)
     }
   }
@@ -120,8 +121,9 @@ export default function AdminHotelDetailPage() {
 
       alert('Hotel deletado com sucesso!')
       router.push('/admin')
-    } catch (err: any) {
-      alert(err.message)
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
+      alert(errorMessage)
       console.error(err)
     }
   }

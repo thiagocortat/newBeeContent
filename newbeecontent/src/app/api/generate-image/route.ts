@@ -33,22 +33,27 @@ export async function POST(req: NextRequest) {
       // Gerar imagem usando o provedor configurado (Replicate ou Runware)
       imageUrl = await generateBlogImage(prompt)
       console.log('Imagem gerada com sucesso:', imageUrl)
-    } catch (imageError: any) {
-      console.warn('Falha na geração de imagem, usando placeholder:', imageError.message)
+    } catch (imageError: unknown) {
+      const errorMessage = imageError instanceof Error ? imageError.message : 'Erro desconhecido'
+      console.warn('Falha na geração de imagem, usando placeholder:', errorMessage)
       // Fallback para placeholder em caso de erro
       imageUrl = `https://via.placeholder.com/800x450/4F46E5/FFFFFF?text=${encodeURIComponent(prompt.slice(0, 50))}`
     }
     
     return NextResponse.json({ imageUrl })
-  } catch (error: any) {
-    console.error('Erro detalhado ao gerar imagem:', {
+  } catch (error: unknown) {
+    const errorDetails = error instanceof Error ? {
       message: error.message,
       stack: error.stack,
       name: error.name,
       cause: error.cause
-    })
+    } : { message: 'Erro desconhecido' }
+    
+    console.error('Erro detalhado ao gerar imagem:', errorDetails)
+    
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
     return NextResponse.json(
-      { error: `Erro interno do servidor: ${error.message}` },
+      { error: `Erro interno do servidor: ${errorMessage}` },
       { status: 500 }
     )
   }

@@ -75,8 +75,9 @@ export default function AdminPage() {
           ? { ...hotel, autoGeneratePosts: !currentStatus }
           : hotel
       ))
-    } catch (err: any) {
-      alert(err.message)
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
+      alert(errorMessage)
       console.error(err)
     }
   }
@@ -99,8 +100,9 @@ export default function AdminPage() {
       // Atualizar a lista removendo o hotel deletado
       setHotels(hotels.filter(hotel => hotel.id !== hotelId))
       alert('Hotel deletado com sucesso!')
-    } catch (err: any) {
-      alert(err.message)
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
+      alert(errorMessage)
       console.error(err)
     }
   }

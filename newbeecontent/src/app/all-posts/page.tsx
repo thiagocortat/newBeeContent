@@ -42,10 +42,12 @@ export default function AllPostsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const currentPage = parseInt(searchParams.get('page') || '1')
+  const currentPage = parseInt(searchParams?.get('page') || '1')
 
   useEffect(() => {
-    fetchPosts(currentPage)
+    if (typeof window !== 'undefined') {
+      fetchPosts(currentPage)
+    }
   }, [currentPage])
 
   const fetchPosts = async (page: number) => {
@@ -54,7 +56,7 @@ export default function AllPostsPage() {
       setError('')
       const response = await axios.get(`/api/posts?page=${page}`)
       setData(response.data)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao carregar posts:', error)
       setError('Erro ao carregar posts. Tente novamente.')
     } finally {
@@ -72,98 +74,6 @@ export default function AllPostsPage() {
       month: '2-digit',
       year: 'numeric'
     })
-  }
-
-  const renderPagination = () => {
-    if (!data?.pagination || data.pagination.totalPages <= 1) return null
-
-    const { currentPage, totalPages, hasPrevPage, hasNextPage } = data.pagination
-    const pages = []
-
-    // Lógica para mostrar páginas (máximo 7 botões)
-    let startPage = Math.max(1, currentPage - 3)
-    let endPage = Math.min(totalPages, currentPage + 3)
-
-    // Ajustar se estiver no início ou fim
-    if (currentPage <= 4) {
-      endPage = Math.min(7, totalPages)
-    }
-    if (currentPage > totalPages - 4) {
-      startPage = Math.max(1, totalPages - 6)
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i)
-    }
-
-    return (
-      <div className="flex justify-center items-center space-x-2 mt-12">
-        {/* Botão Anterior */}
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={!hasPrevPage}
-          className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
-        >
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Anterior
-        </button>
-
-        {/* Primeira página */}
-        {startPage > 1 && (
-          <>
-            <button
-              onClick={() => handlePageChange(1)}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-all duration-150"
-            >
-              1
-            </button>
-            {startPage > 2 && <span className="px-2 text-gray-400">...</span>}
-          </>
-        )}
-
-        {/* Páginas numeradas */}
-        {pages.map((page) => (
-          <button
-            key={page}
-            onClick={() => handlePageChange(page)}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150 ${
-              page === currentPage
-                ? 'bg-blue-600 text-white border border-blue-600 shadow-sm'
-                : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-900'
-            }`}
-          >
-            {page}
-          </button>
-        ))}
-
-        {/* Última página */}
-        {endPage < totalPages && (
-          <>
-            {endPage < totalPages - 1 && <span className="px-2 text-gray-400">...</span>}
-            <button
-              onClick={() => handlePageChange(totalPages)}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-all duration-150"
-            >
-              {totalPages}
-            </button>
-          </>
-        )}
-
-        {/* Botão Próximo */}
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={!hasNextPage}
-          className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
-        >
-          Próximo
-          <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-      </div>
-    )
   }
 
   if (loading) {
@@ -312,9 +222,6 @@ export default function AllPostsPage() {
                 </article>
               ))}
             </div>
-
-            {/* Paginação */}
-            {renderPagination()}
           </div>
         </div>
       </div>
