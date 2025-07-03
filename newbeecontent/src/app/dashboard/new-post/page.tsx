@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import ReactMarkdown from 'react-markdown'
@@ -14,6 +14,11 @@ export default function NewPostPage() {
   const [baseContent, setBaseContent] = useState('')
   const [postContent, setPostContent] = useState('')
   const [imageUrl, setImageUrl] = useState('')
+  
+  // Debug: Log quando imageUrl muda
+  useEffect(() => {
+    console.log('Estado imageUrl mudou para:', imageUrl)
+  }, [imageUrl])
   const [seo, setSeo] = useState({ description: '', slug: '' })
   const [scheduledAt, setScheduledAt] = useState('')
   const [loading, setLoading] = useState(false)
@@ -129,8 +134,18 @@ O artigo deve ter:
     try {
       const imagePrompt = `Create a professional blog post header image for: ${title || postContent.slice(0, 100)}. Modern, clean, high-quality, suitable for a blog article.`
       
+      console.log('Gerando imagem com prompt:', imagePrompt)
       const response = await axios.post('/api/generate-image', { prompt: imagePrompt })
-      setImageUrl(response.data.imageUrl)
+      console.log('Resposta da API:', response.data)
+      
+      if (response.data.imageUrl) {
+        console.log('URL da imagem recebida:', response.data.imageUrl)
+        setImageUrl(response.data.imageUrl)
+        console.log('Estado imageUrl atualizado para:', response.data.imageUrl)
+      } else {
+        console.error('imageUrl não encontrada na resposta:', response.data)
+        alert('Erro: URL da imagem não foi retornada pela API')
+      }
     } catch (error) {
       console.error('Erro ao gerar imagem:', error)
       alert('Erro ao gerar imagem com IA. Verifique sua conexão.')
@@ -398,8 +413,8 @@ O artigo deve ter:
             <ImageUpload
               value={imageUrl}
               onChange={setImageUrl}
-            />
-          </div>
+              className="mb-4"
+            /></div>
         </div>
       </div>
 

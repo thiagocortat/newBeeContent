@@ -1,36 +1,177 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🐝 BeeContent
 
-## Getting Started
+**Sistema de blogs automatizados para hotéis com IA integrada**
 
-First, run the development server:
+Uma plataforma completa para hotéis criarem e gerenciarem blogs automaticamente, com geração de conteúdo por IA, domínios personalizados e design moderno.
+
+## ✨ Funcionalidades
+
+- 🤖 **Geração automática de posts** com IA (Groq)
+- 🎨 **Geração de imagens** com IA (Replicate ou Runware)
+- 🌐 **Multi-tenant** com domínios personalizados
+- 📱 **Design responsivo** e moderno
+- 🔐 **Sistema de autenticação** completo
+- 📊 **Analytics** e métricas de posts
+- 🗄️ **Suporte a SQLite e PostgreSQL**
+
+## 🚀 Início Rápido
+
+### Configuração Automática (Recomendado)
 
 ```bash
+# 1. Clonar o repositório
+git clone <repository-url>
+cd newbeecontent
+
+# 2. Instalar dependências
+npm install
+
+# 3. Configurar ambiente de desenvolvimento
+npm run setup:dev
+
+# 4. Configurar banco de dados
+npm run db:push
+
+# 5. Popular com dados iniciais
+npm run seed
+
+# 6. Iniciar servidor
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Configuração Manual
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# 1. Copiar arquivo de ambiente
+cp .env.example .env
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# 2. Editar .env com suas configurações
+# 3. Configurar banco de dados
+npm run db:generate
+npm run db:push
+npm run seed
 
-## Learn More
+# 4. Iniciar desenvolvimento
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Acesse [http://localhost:3000](http://localhost:3000) para ver a aplicação.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🌍 Configuração de Ambiente
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+O BeeContent suporta **dois ambientes**:
 
-## Deploy on Vercel
+- **🔧 Desenvolvimento**: SQLite (zero configuração)
+- **🚀 Produção**: PostgreSQL (recomendado)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Scripts Disponíveis
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run setup:dev      # Configurar desenvolvimento
+npm run setup:prod     # Configurar produção
+npm run db:studio      # Abrir Prisma Studio
+npm run deploy:check   # Verificar configurações
+```
+
+📖 **Documentação completa**: [ENVIRONMENT.md](./ENVIRONMENT.md)
+
+## 🏗️ Tecnologias
+
+- **Framework**: Next.js 15 com App Router
+- **Banco de Dados**: Prisma + SQLite/PostgreSQL
+- **Autenticação**: JWT
+- **IA**: Groq (texto) + Replicate/Runware (imagens)
+- **Estilo**: Tailwind CSS
+- **Deploy**: Vercel
+
+## 📁 Estrutura do Projeto
+
+```
+src/
+├── app/                 # App Router (Next.js 15)
+│   ├── api/            # API Routes
+│   ├── dashboard/      # Painel administrativo
+│   ├── blog/           # Páginas públicas do blog
+│   └── all-posts/      # Lista de todos os posts
+├── components/         # Componentes reutilizáveis
+└── lib/               # Utilitários e configurações
+
+prisma/
+├── schema.prisma      # Schema do banco de dados
+└── seed.ts           # Dados iniciais
+
+scripts/
+├── setup-environment.js  # Configurador de ambiente
+└── test-deploy.js        # Verificador de deploy
+```
+
+## 🚀 Deploy
+
+### Vercel (Recomendado)
+
+```bash
+# 1. Configurar produção
+npm run setup:prod
+
+# 2. Verificar configurações
+npm run deploy:check
+
+# 3. Deploy
+npx vercel --prod
+```
+
+📖 **Guia completo de deploy**: [DEPLOY.md](./DEPLOY.md)
+
+## 🔧 Desenvolvimento
+
+### Comandos Úteis
+
+```bash
+# Banco de dados
+npm run db:studio      # Interface visual do banco
+npm run db:reset       # Resetar banco + seed
+
+# Desenvolvimento
+npm run dev            # Servidor de desenvolvimento
+npm run build          # Build para produção
+npm run lint           # Verificar código
+```
+
+### Variáveis de Ambiente
+
+```env
+# Obrigatórias
+DATABASE_URL="file:./dev.db"
+JWT_SECRET="seu-jwt-secret"
+
+# Opcionais (para IA)
+GROQ_API_KEY="sua-chave-groq"
+
+# Geração de imagens (escolha um ou ambos)
+REPLICATE_API_TOKEN="seu-token-replicate"
+RUNWARE_API_KEY="sua-chave-runware"
+IMAGE_PROVIDER="replicate"  # ou "runware"
+```
+
+## 📚 Documentação
+
+- [🌍 Configuração de Ambiente](./ENVIRONMENT.md)
+- [🚀 Guia de Deploy](./DEPLOY.md)
+- [📖 Next.js Documentation](https://nextjs.org/docs)
+- [🔧 Prisma Documentation](https://www.prisma.io/docs)
+
+## 🤝 Contribuição
+
+1. Fork o projeto
+2. Crie uma branch para sua feature
+3. Commit suas mudanças
+4. Push para a branch
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT.
+
+---
+
+**💡 Dica**: Use `npm run setup:dev` para configuração rápida!

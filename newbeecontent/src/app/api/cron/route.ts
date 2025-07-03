@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { generatePostIdeas } from '../../../../lib/groq'
-import { generateImage } from '../../../../lib/replicate'
+import { generateBlogImage } from '../../../../lib/image-service'
 
 const prisma = new PrismaClient()
 
@@ -62,11 +62,11 @@ export async function GET() {
 
       try {
         const context = `Hotel em ${hotel.city}, estado ${hotel.state}, voltado para ${hotel.travelType}, estação ${hotel.season}, eventos: ${hotel.events}`
-        const ideas = await generatePostIdeas(`Gere 3 ideias de post para: ${context}`)
-        const title = ideas[0] || 'Post automático'
+        const postData = await generatePostIdeas(`Gere uma ideia de post para: ${context}`)
+        const title = postData.title || 'Post automático'
 
         const content = await generatePostFromGroq(`Escreva um post de blog de 400 palavras com o título: ${title}`)
-        const imageUrl = await generateImage(`${title}, contexto: hotel em ${hotel.city}, ${hotel.season}`)
+        const imageUrl = await generateBlogImage(`${title}, contexto: hotel em ${hotel.city}, ${hotel.season}`)
 
         await prisma.post.create({
           data: {
@@ -76,7 +76,7 @@ export async function GET() {
             slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
             hotelId: hotel.id,
             authorId: hotel.ownerId,
-            scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 24) // publica amanhã
+            publishedAt: new Date(Date.now() + 1000 * 60 * 60 * 24) // publica amanhã
           }
         })
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateImage } from '../../../../lib/replicate'
+import { generateBlogImage } from '../../../../lib/image-service'
 import jwt from 'jsonwebtoken'
 
 export async function POST(req: NextRequest) {
@@ -30,11 +30,11 @@ export async function POST(req: NextRequest) {
     let imageUrl: string
     
     try {
-      // Tentar gerar com Replicate
-      imageUrl = await generateImage(prompt)
-      console.log('Imagem gerada com Replicate:', imageUrl)
-    } catch (replicateError: any) {
-      console.warn('Falha no Replicate, usando placeholder:', replicateError.message)
+      // Gerar imagem usando o provedor configurado (Replicate ou Runware)
+      imageUrl = await generateBlogImage(prompt)
+      console.log('Imagem gerada com sucesso:', imageUrl)
+    } catch (imageError: any) {
+      console.warn('Falha na geração de imagem, usando placeholder:', imageError.message)
       // Fallback para placeholder em caso de erro
       imageUrl = `https://via.placeholder.com/800x450/4F46E5/FFFFFF?text=${encodeURIComponent(prompt.slice(0, 50))}`
     }
