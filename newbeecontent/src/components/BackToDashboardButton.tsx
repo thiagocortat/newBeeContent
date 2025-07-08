@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import axios from 'axios'
+import axios from '@/lib/axios'
 
 export default function BackToDashboardButton() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)

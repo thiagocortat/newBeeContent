@@ -8,35 +8,59 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  role      String   @default("user") // 'admin' | 'user'
+  id           String         @id @default(cuid())
+  email        String         @unique
+  password     String
+  role         String         @default("viewer") // 'superadmin' | 'admin' | 'editor' | 'viewer'
+  redes        Rede[]
+  hotels       Hotel[]
+  posts        Post[]
+  redeRoles    UserRedeRole[]
+  hotelRoles   UserHotelRole[]
+  createdAt    DateTime       @default(now())
+}
+
+model Rede {
+  id        String         @id @default(cuid())
+  name      String
+  slug      String         @unique
+  ownerId   String
+  owner     User           @relation(fields: [ownerId], references: [id])
   hotels    Hotel[]
-  posts     Post[]
-  createdAt DateTime @default(now())
+  userRoles UserRedeRole[]
+  createdAt DateTime       @default(now())
 }
 
 model Hotel {
-  id                  String   @id @default(cuid())
+  id                  String          @id @default(cuid())
   name                String
+  slug                String
   city                String
   state               String
   country             String
-  travelType          String   // Ex: "romântica", "família", etc
-  audience            String   // Público-alvo
-  season              String   // Estação do ano mais relevante
-  events              String   // Eventos locais
-  customDomain        String?  @unique
-  autoGeneratePosts   Boolean  @default(false)
-  postFrequency       String?  // 'daily' | 'weekly' | 'biweekly'
-  themePreferences    String?  // JSON ou CSV com palavras-chave
-  maxMonthlyPosts     Int?     // Limite opcional de posts automáticos
+  travelType          String          // Ex: "romântica", "família", etc
+  audience            String          // Público-alvo
+  season              String          // Estação do ano mais relevante
+  events              String          // Eventos locais
+  customDomain        String?         @unique
+  autoGeneratePosts   Boolean         @default(false)
+  nextScheduledAt     DateTime?
+  nextSuggestedTitle  String?
+  postFrequency       String?         // 'daily' | 'weekly' | 'biweekly'
+  themePreferences    String?         // JSON ou CSV com palavras-chave
+  maxMonthlyPosts     Int?            // Limite opcional de posts automáticos
   lastAutoPostAt      DateTime?
+  themeConfig         String?         // JSON com configurações de tema
+  redeId              String
+  rede                Rede            @relation(fields: [redeId], references: [id])
   ownerId             String
-  owner               User     @relation(fields: [ownerId], references: [id])
+  owner               User            @relation(fields: [ownerId], references: [id])
   posts               Post[]
-  createdAt           DateTime @default(now())
+  userRoles           UserHotelRole[]
+  automationLogs      AutomationLog[]
+  createdAt           DateTime        @default(now())
+
+  @@unique([slug, redeId]) // Slug único por rede
 }
 
 model Post {
@@ -52,6 +76,7 @@ model Post {
   publishedAt DateTime? // agora é opcional
   scheduledAt DateTime? // nova coluna
   views       PostView[]
+  automationLogs AutomationLog[]
   createdAt   DateTime @default(now())
 }
 
@@ -61,4 +86,42 @@ model PostView {
   createdAt DateTime @default(now())
 
   post Post @relation(fields: [postId], references: [id])
+}
+
+// Tabela para gerenciar roles de usuários por rede
+model UserRedeRole {
+  id      String @id @default(cuid())
+  userId  String
+  redeId  String
+  role    String // 'admin' para administrador da rede
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rede    Rede   @relation(fields: [redeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, redeId]) // Um usuário pode ter apenas um role por rede
+}
+
+// Tabela para gerenciar roles de usuários por hotel
+model UserHotelRole {
+  id      String @id @default(cuid())
+  userId  String
+  hotelId String
+  role    String // 'editor' ou 'viewer'
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hotel   Hotel  @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, hotelId]) // Um usuário pode ter apenas um role por hotel
+}
+
+model AutomationLog {
+  id        String   @id @default(cuid())
+  hotelId   String
+  postId    String?
+  status    String   // success, error, pending
+  message   String?
+  createdAt DateTime @default(now())
+
+  hotel     Hotel    @relation(fields: [hotelId], references: [id])
+  post      Post?    @relation(fields: [postId], references: [id])
 }

@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '../../../../lib/database'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { cookies } from 'next/headers'
-
-const prisma = new PrismaClient()
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,14 +16,26 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Buscar usuário no banco
+    // Buscar usuário no banco com roles relacionados
     const user = await prisma.user.findUnique({ 
       where: { email },
       select: {
         id: true,
         email: true,
         password: true,
-        role: true
+        role: true,
+        redeRoles: {
+          select: {
+            redeId: true,
+            role: true
+          }
+        },
+        hotelRoles: {
+          select: {
+            hotelId: true,
+            role: true
+          }
+        }
       }
     })
 
@@ -45,12 +55,18 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Determinar hotelId e redeId principais baseado nos roles
+    const primaryRedeId = user.redeRoles.length > 0 ? user.redeRoles[0].redeId : null
+    const primaryHotelId = user.hotelRoles.length > 0 ? user.hotelRoles[0].hotelId : null
+
     // Gerar token JWT
     const token = jwt.sign(
       { 
         userId: user.id, 
         email: user.email,
-        role: user.role 
+        role: user.role,
+        hotelId: primaryHotelId,
+        redeId: primaryRedeId
       }, 
       process.env.JWT_SECRET!, 
       { expiresIn: '7d' }
@@ -69,10 +85,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { 
         message: 'Login realizado com sucesso',
+        token: token,
         user: {
           id: user.id,
           email: user.email,
-          role: user.role
+          role: user.role,
+          hotelId: primaryHotelId,
+          redeId: primaryRedeId
         }
       },
       { status: 200 }

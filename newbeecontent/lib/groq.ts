@@ -35,10 +35,18 @@ export async function generatePostIdeas(baseContent: string): Promise<PostConten
 
 {
   "title": "Título atrativo e otimizado para SEO",
-  "content": "Conteúdo completo do post em markdown, bem estruturado com introdução, desenvolvimento e conclusão. Mínimo 300 palavras.",
+  "content": "Conteúdo completo do post formatado em **Markdown** com títulos (##), subtítulos (###), listas com marcadores (-), negritos (**texto**) e parágrafos bem separados. Mínimo 300 palavras. NÃO use HTML.",
   "seoDescription": "Meta descrição para SEO entre 150-160 caracteres",
   "slug": "slug-amigavel-para-url"
 }
+
+Formate o conteúdo em **Markdown** com:
+- Títulos com ## 
+- Subtítulos com ###
+- Listas com marcadores usando -
+- Negritos para trechos importantes usando **texto**
+- Parágrafos separados por linha em branco
+- NÃO use HTML diretamente
 
 CONTEÚDO BASE:
 ${baseContent}
@@ -256,4 +264,80 @@ IMPORTANTE: Responda APENAS com o array JSON válido, sem texto adicional antes 
       }
     ]
   }
+}
+
+/**
+ * Gera conteúdo de post em Markdown estruturado a partir de um título.
+ * @param title Título do post a ser gerado
+ * @param hotel Dados do hotel para contextualizar o conteúdo
+ * @returns Conteúdo do post formatado em Markdown
+ */
+export async function generateMarkdownPostFromTitle(title: string, hotel: any): Promise<string> {
+  const prompt = `
+Gere um post de blog com aproximadamente 600 palavras com o seguinte título:
+
+"${title}"
+
+O post deve ser escrito no idioma português e seguir rigorosamente o formato Markdown, com a seguinte estrutura:
+
+## Introdução
+- Comece com uma introdução breve e envolvente sobre o tema.
+
+## Destaques do Destino / Dica Principal
+- Liste as principais atrações, curiosidades ou argumentos centrais.
+- Use subtítulos com ### se necessário.
+- Utilize listas com - ou * quando fizer sentido.
+
+## Experiências e Benefícios
+- Descreva o que o visitante pode esperar vivenciar.
+- Use **negrito** para destacar palavras-chave ou benefícios relevantes.
+
+## Eventos ou Atividades Locais
+- Mencione festividades, datas comemorativas ou atividades turísticas relacionadas ao hotel ou região.
+
+## Conclusão com CTA (Call to Action)
+- Finalize incentivando o leitor a reservar, conhecer o hotel ou entrar em contato.
+- Seja direto, mas natural.
+
+Importante:
+- Use parágrafos separados por uma linha em branco.
+- Não utilize HTML.
+- Não adicione introduções fora da estrutura.
+- Retorne apenas o conteúdo em Markdown, sem comentários adicionais.
+
+Informações úteis para o contexto:
+- Hotel: ${hotel.name}
+- Cidade: ${hotel.city}, ${hotel.state}
+- Tipo de público: ${hotel.audience}
+- Estação atual: ${hotel.season}
+- Eventos: ${hotel.events}
+  `
+
+  const response = await axios.post(
+    'https://api.groq.com/openai/v1/chat/completions',
+    {
+      model: 'llama3-70b-8192',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 2000
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  )
+
+  if (!response.data || !response.data.choices || !response.data.choices[0] || !response.data.choices[0].message) {
+    console.error('Resposta inválida do Groq:', response.data)
+    throw new Error('Resposta inválida da API do Groq')
+  }
+
+  const content = response.data.choices[0].message.content?.trim()
+  if (!content) {
+    throw new Error('Conteúdo vazio na resposta do Groq')
+  }
+
+  return content
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import axios from 'axios'
+import axios from '@/lib/axios'
 import ReactMarkdown from 'react-markdown'
 // Removido import direto do groq - agora usa API route
 import ImageUpload from '@/components/ImageUpload'

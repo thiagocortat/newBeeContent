@@ -10,7 +10,7 @@ function isAdmin(req: NextRequest): boolean {
     if (!token) return false
     
     const payload = verify(token, process.env.JWT_SECRET!) as any
-    return payload && payload.role === 'admin'
+    return payload && (payload.role === 'admin' || payload.role === 'superadmin')
   } catch {
     return false
   }
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Acesso negado. Apenas administradores.' }, { status: 401 })
     }
 
-    const { name, city, state, country, travelType, audience, season, events, customDomain, ownerId } = await req.json()
+    const { name, city, state, country, travelType, audience, season, events, customDomain, ownerId, redeId } = await req.json()
 
     // Verificar se o proprietário existe
     const owner = await prisma.user.findUnique({
@@ -63,6 +63,26 @@ export async function POST(req: NextRequest) {
 
     if (!owner) {
       return NextResponse.json({ error: 'Proprietário não encontrado' }, { status: 400 })
+    }
+
+    // Verificar se a rede existe
+    const rede = await prisma.rede.findUnique({
+      where: { id: redeId }
+    })
+
+    if (!rede) {
+      return NextResponse.json({ error: 'Rede não encontrada' }, { status: 400 })
+    }
+
+    // Gerar slug único baseado no nome
+    const baseSlug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
+    let slug = baseSlug
+    let counter = 1
+    
+    // Verificar se o slug já existe na rede
+    while (await prisma.hotel.findFirst({ where: { slug, redeId } })) {
+      slug = `${baseSlug}-${counter}`
+      counter++
     }
 
     // Verificar se o domínio já está em uso
@@ -79,6 +99,7 @@ export async function POST(req: NextRequest) {
     const hotel = await prisma.hotel.create({
       data: {
         name,
+        slug,
         city,
         state,
         country,
@@ -87,13 +108,20 @@ export async function POST(req: NextRequest) {
         season,
         events,
         customDomain,
-        ownerId
+        ownerId,
+        redeId
       },
       include: {
         owner: {
           select: {
             email: true,
             role: true
+          }
+        },
+        rede: {
+          select: {
+            name: true,
+            slug: true
           }
         },
         _count: {

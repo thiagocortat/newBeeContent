@@ -13,8 +13,8 @@ export const config = {
   database: {
     url: process.env.DATABASE_URL || 'file:./dev.db',
     // Detecta automaticamente se é SQLite ou PostgreSQL
-    isPostgreSQL: process.env.DATABASE_URL?.startsWith('postgresql://') || false,
-    isSQLite: !process.env.DATABASE_URL?.startsWith('postgresql://'),
+    isPostgreSQL: process.env.DATABASE_URL?.startsWith('postgresql://') || process.env.DATABASE_URL?.startsWith('prisma+postgres://') || false,
+    isSQLite: !process.env.DATABASE_URL?.startsWith('postgresql://') && !process.env.DATABASE_URL?.startsWith('prisma+postgres://'),
   },
 
   // Authentication

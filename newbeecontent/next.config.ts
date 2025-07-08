@@ -11,8 +11,24 @@ const nextConfig: NextConfig = {
     // your project has type errors.
     ignoreBuildErrors: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'im.runware.ai',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
   // Disable static generation for problematic routes
-  generateStaticParams: false,
+  // generateStaticParams: false, // This option is not valid in next.config.ts
 };
 
 export default nextConfig;

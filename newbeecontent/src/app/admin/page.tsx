@@ -24,12 +24,14 @@ interface Hotel {
 
 export default function AdminPage() {
   const [hotels, setHotels] = useState<Hotel[]>([])
+  const [redes, setRedes] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const router = useRouter()
 
   useEffect(() => {
     fetchHotels()
+    fetchRedes()
   }, [])
 
   const fetchHotels = async () => {
@@ -49,6 +51,19 @@ export default function AdminPage() {
       console.error(err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchRedes = async () => {
+    try {
+      const response = await fetch('/api/admin/redes')
+      if (!response.ok) {
+        throw new Error('Erro ao carregar redes')
+      }
+      const data = await response.json()
+      setRedes(data)
+    } catch (error) {
+      console.error('Erro ao buscar redes:', error)
     }
   }
 
@@ -165,7 +180,7 @@ export default function AdminPage() {
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center">
             <div className="p-3 bg-blue-100 rounded-lg">
@@ -207,6 +222,114 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
+        
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center">
+            <div className="p-3 bg-orange-100 rounded-lg">
+              <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total de Redes</p>
+              <p className="text-2xl font-bold text-gray-900">{redes.length}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Lista de Redes */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <h2 className="text-xl font-semibold text-gray-900">Redes do Sistema</h2>
+          <p className="text-sm text-gray-600 mt-1">Visualize e gerencie todas as redes cadastradas</p>
+        </div>
+
+        {redes.length === 0 ? (
+          <div className="p-12 text-center">
+            <div className="p-4 bg-gray-100 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+              <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma rede cadastrada</h3>
+            <p className="text-gray-600">Ainda não há redes registradas no sistema.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Rede
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Proprietário
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Hotéis
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Posts Totais
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {redes.map((rede) => (
+                  <tr key={rede.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{rede.name}</div>
+                        <div className="text-sm text-gray-500">/{rede.slug}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{rede.owner.email}</div>
+                      <div className="text-sm text-gray-500">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          rede.owner.role === 'admin' 
+                            ? 'bg-purple-100 text-purple-800' 
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {rede.owner.role}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{rede._count.hotels} hotéis</div>
+                      {rede.hotels.length > 0 && (
+                         <div className="text-sm text-gray-500">
+                           {rede.hotels.slice(0, 2).map((hotel: any) => hotel.name).join(', ')}
+                           {rede.hotels.length > 2 && ` +${rede.hotels.length - 2} mais`}
+                         </div>
+                       )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {rede.hotels.reduce((acc: number, hotel: any) => acc + hotel._count.posts, 0)} posts
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/${rede.slug}`}
+                          target="_blank"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-all duration-150"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                          Visualizar
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Lista de Hotéis */}

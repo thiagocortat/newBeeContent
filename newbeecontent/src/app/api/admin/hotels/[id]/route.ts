@@ -10,7 +10,7 @@ function isAdmin(req: NextRequest): boolean {
     if (!token) return false
     
     const payload = verify(token, process.env.JWT_SECRET!) as any
-    return payload && payload.role === 'admin'
+    return payload && (payload.role === 'admin' || payload.role === 'superadmin')
   } catch {
     return false
   }

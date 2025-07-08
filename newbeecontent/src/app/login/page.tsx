@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import axios from 'axios'
+import axios from '@/lib/axios'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -18,6 +18,10 @@ export default function LoginPage() {
       const res = await axios.post('/api/login', { email, password })
 
       if (res.status === 200) {
+        // Salvar token no localStorage para requisições Bearer
+        if (res.data.token) {
+          localStorage.setItem('token', res.data.token)
+        }
         router.push('/dashboard')
       }
     } catch (error) {
@@ -29,23 +33,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <form onSubmit={handleLogin} className="max-w-md w-full mx-auto bg-white p-8 rounded-lg shadow-md space-y-6">
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
+      <form onSubmit={handleLogin} className="max-w-md w-full mx-auto card-themed p-8 rounded-lg shadow-md space-y-6">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Login</h1>
-          <p className="mt-2 text-gray-600">Acesse seu dashboard</p>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>Login</h1>
+          <p className="mt-2" style={{ color: 'var(--foreground)', opacity: 0.7 }}>Acesse seu dashboard</p>
         </div>
         
         <div className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium mb-1" style={{ color: 'var(--foreground)' }}>
               Email
             </label>
             <input
               id="email"
               type="email"
               placeholder="seu@email.com"
-              className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full input-themed border p-3 rounded-md focus:ring-2 focus:ring-blue-500"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -53,14 +57,14 @@ export default function LoginPage() {
           </div>
           
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium mb-1" style={{ color: 'var(--foreground)' }}>
               Senha
             </label>
             <input
               id="password"
               type="password"
               placeholder="Sua senha"
-              className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full input-themed border p-3 rounded-md focus:ring-2 focus:ring-blue-500"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

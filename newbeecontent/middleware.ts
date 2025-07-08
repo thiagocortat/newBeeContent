@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import { verify } from 'jsonwebtoken'
 
-const prisma = new PrismaClient()
-const protectedRoutes = ['/dashboard']
+const protectedRoutes = ['/dashboard', '/admin']
 
 export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone()
@@ -29,23 +27,9 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Multi-tenant logic para blog
-  const host = req.headers.get('host')?.toLowerCase() || ''
-
-  const hotel = await prisma.hotel.findFirst({
-    where: {
-      customDomain: host
-    }
-  })
-
-  if (hotel) {
-    url.searchParams.set('hotelId', hotel.id)
-    return NextResponse.rewrite(url)
-  }
-
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/blog/:path*']
+  matcher: ['/dashboard/:path*', '/admin/:path*', '/blog/:path*']
 }

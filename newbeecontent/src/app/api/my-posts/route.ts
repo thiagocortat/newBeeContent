@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '../../../../lib/database'
 import jwt from 'jsonwebtoken'
-
-const prisma = new PrismaClient()
 
 export async function GET(req: NextRequest) {
   try {
@@ -20,16 +18,70 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
     }
 
-    // Buscar o hotel do usuário
-    const userHotel = await prisma.hotel.findFirst({
-      where: {
-        ownerId: userId
+    // Buscar usuário com suas permissões
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        redeRoles: true,
+        hotelRoles: true
       }
     })
 
-    if (!userHotel) {
-      return NextResponse.json({ error: 'Hotel não encontrado' }, { status: 404 })
+    if (!user) {
+      return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
     }
+
+    // Buscar hotéis baseado nas permissões do usuário
+    let userHotels: any[] = []
+    
+    if (user.role === 'superadmin') {
+      // Superadmin pode ver todos os hotéis
+      userHotels = await prisma.hotel.findMany({
+        include: {
+          rede: true
+        }
+      })
+    } else {
+      // Buscar hotéis onde o usuário é proprietário
+      const ownedHotels = await prisma.hotel.findMany({
+        where: { ownerId: userId },
+        include: {
+          rede: true
+        }
+      })
+      
+      // Buscar hotéis onde o usuário tem roles específicos
+      const hotelIds = user.hotelRoles.map((role: any) => role.hotelId)
+      const roleHotels = hotelIds.length > 0 ? await prisma.hotel.findMany({
+        where: { id: { in: hotelIds } },
+        include: {
+          rede: true
+        }
+      }) : []
+      
+      // Combinar hotéis únicos
+      const allHotels = [...ownedHotels, ...roleHotels]
+      userHotels = allHotels.filter((hotel: any, index: number, self: any[]) => 
+        index === self.findIndex((h: any) => h.id === hotel.id)
+      )
+    }
+
+    if (userHotels.length === 0) {
+      return NextResponse.json({ 
+        posts: [],
+        hotels: [],
+        pagination: {
+          currentPage: 1,
+          totalPages: 0,
+          totalPosts: 0,
+          hasNextPage: false,
+          hasPrevPage: false
+        }
+      })
+    }
+
+    // Extrair IDs dos hotéis
+    const hotelIds = userHotels.map((hotel: any) => hotel.id)
 
     // Parâmetros de paginação
     const url = new URL(req.url)
@@ -37,10 +89,14 @@ export async function GET(req: NextRequest) {
     const limit = 10
     const skip = (page - 1) * limit
 
-    // Buscar posts do hotel com paginação
+    // Buscar posts de todos os hotéis do usuário com paginação
     const [posts, totalPosts] = await Promise.all([
       prisma.post.findMany({
-        where: { hotelId: userHotel.id },
+        where: { 
+          hotelId: {
+            in: hotelIds
+          }
+        },
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
@@ -52,10 +108,19 @@ export async function GET(req: NextRequest) {
           publishedAt: true,
           scheduledAt: true,
           createdAt: true,
+          hotel: {
+            include: {
+              rede: true
+            }
+          }
         },
       }),
       prisma.post.count({
-        where: { hotelId: userHotel.id }
+        where: { 
+          hotelId: {
+            in: hotelIds
+          }
+        }
       })
     ])
 
@@ -63,6 +128,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       posts,
+      hotels: userHotels,
       pagination: {
         currentPage: page,
         totalPages,

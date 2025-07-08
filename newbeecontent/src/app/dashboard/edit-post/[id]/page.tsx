@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import axios from 'axios'
+import axios from '@/lib/axios'
 import ReactMarkdown from 'react-markdown'
 import ImageUpload from '@/components/ImageUpload'
 
@@ -274,7 +274,7 @@ export default function EditPostPage() {
                   Conteúdo do Post (Markdown)
                 </label>
                 <textarea
-                  className="w-full h-64 p-4 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-150 resize-none"
+                  className="w-full h-64 p-4 input-themed border rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 resize-none"
                   value={post.content}
                   onChange={(e) => setPost({ ...post, content: e.target.value })}
                   placeholder="Conteúdo completo do post em markdown..."
