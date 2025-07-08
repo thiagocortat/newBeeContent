@@ -2,6 +2,10 @@ import { notFound } from 'next/navigation'
 import { prisma } from '../../../../lib/database'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { MapPin, Calendar, Users, Plane, Heart, Building2, Globe, Star, ExternalLink } from 'lucide-react'
 
 interface PageProps {
   params: {
@@ -30,10 +34,6 @@ interface HotelData {
   city: string
   state: string
   country: string
-  travelType: string
-  audience: string
-  season: string
-  events: string
   themeConfig: string | null
   rede: {
     name: string
@@ -123,159 +123,64 @@ export default async function HotelPage({ params }: PageProps) {
   const theme = getThemeConfig(hotel)
 
   return (
-    <div className="min-h-screen bg-gray-50" style={{ fontFamily: theme.fontFamily }}>
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-5xl mx-auto px-4 py-8">
-          {/* Breadcrumb */}
-          <nav className="flex items-center justify-center space-x-2 text-sm text-gray-500 mb-6">
-            <Link href={`/${hotel.rede.slug}`} className="hover:text-gray-700 hover:underline">
-              🏢 {hotel.rede.name}
-            </Link>
-            <span>/</span>
-            <span className="text-gray-900 font-medium">🏨 {hotel.name}</span>
-          </nav>
-
-          <div className="text-center">
-            {theme.logoUrl && (
-              <div className="mb-6 flex justify-center">
-                <Image
-                  src={theme.logoUrl}
-                  alt={`${hotel.name} logo`}
-                  width={120}
-                  height={60}
-                  className="object-contain"
-                />
-              </div>
-            )}
-            <h1 className="text-3xl font-bold mb-3" style={{ color: theme.primaryColor }}>
-              🏨 Blog do Hotel {hotel.name}
-            </h1>
-            <p className="text-gray-600 text-lg mb-2">
-              {hotel.city}, {hotel.state} • {hotel.travelType}
-            </p>
-            <p className="text-gray-500 mb-4">
-              {hotel.audience} • {hotel.season}
-            </p>
-            <div className="text-sm text-gray-500">
-              {hotel.posts.length} {hotel.posts.length === 1 ? 'post publicado' : 'posts publicados'}
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <Link href={`/${hotel.rede.slug}`} className="text-blue-600 hover:underline">
+            ← Voltar para {hotel.rede.name}
+          </Link>
         </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        {/* Informações do Hotel */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4" style={{ color: theme.primaryColor }}>
-            Sobre o Hotel
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-            <div>
-              <span className="font-medium text-gray-700">Localização:</span>
-              <p className="text-gray-600">{hotel.city}, {hotel.state}, {hotel.country}</p>
-            </div>
-            <div>
-              <span className="font-medium text-gray-700">Tipo de Viagem:</span>
-              <p className="text-gray-600">{hotel.travelType}</p>
-            </div>
-            <div>
-              <span className="font-medium text-gray-700">Público-alvo:</span>
-              <p className="text-gray-600">{hotel.audience}</p>
-            </div>
-            <div>
-              <span className="font-medium text-gray-700">Melhor Época:</span>
-              <p className="text-gray-600">{hotel.season}</p>
-            </div>
-          </div>
-          {hotel.events && (
-            <div className="mt-4">
-              <span className="font-medium text-gray-700">Eventos Locais:</span>
-              <p className="text-gray-600">{hotel.events}</p>
-            </div>
-          )}
+        
+        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+          <h1 className="text-4xl font-bold mb-4">{hotel.name}</h1>
+          <p className="text-gray-600 mb-4">{hotel.city}, {hotel.state} - {hotel.country}</p>
+          <p className="text-gray-700">Rede: {hotel.rede.name}</p>
         </div>
 
-        {/* Lista de posts */}
-        <div className="space-y-6">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-6">Artigos sobre {hotel.name}</h2>
+          
           {hotel.posts.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-              <div className="p-4 bg-gray-100 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-                <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                </svg>
-              </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Blog do {hotel.name}</h2>
-              <p className="text-gray-600 text-lg">Nenhum post publicado ainda.</p>
-              <p className="text-gray-500 text-sm mt-2">Os posts aparecerão aqui quando forem publicados.</p>
+            <div className="bg-white rounded-lg shadow p-8 text-center">
+              <p className="text-gray-600">Em breve, novas histórias sobre {hotel.name}</p>
             </div>
           ) : (
-            hotel.posts.map((post) => (
-              <article key={post.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-150">
-                <div className="md:flex">
-                  {/* Imagem */}
-                  {post.imageUrl && (
-                    <div className="md:w-1/3">
-                      <div className="aspect-video md:aspect-square w-full overflow-hidden">
-                        <Image
-                          src={post.imageUrl}
-                          alt={post.title}
-                          width={400}
-                          height={300}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                        />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {hotel.posts.map((post) => (
+                <Card key={post.id} className="overflow-hidden">
+                  <CardContent className="p-0">
+                    <Link href={`/${hotel.rede.slug}/${hotel.slug}/${post.slug}`}>
+                      <div className="block">
+                        {post.imageUrl && (
+                          <div className="relative h-48">
+                            <Image
+                              src={post.imageUrl}
+                              alt={post.title}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="p-4">
+                          <h3 className="font-semibold text-lg mb-2">{post.title}</h3>
+                          <p className="text-gray-600 text-sm line-clamp-3">
+                            {post.content.substring(0, 150)}...
+                          </p>
+                          {post.publishedAt && (
+                            <p className="text-gray-500 text-xs mt-2">
+                              {new Date(post.publishedAt).toLocaleDateString('pt-BR')}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  
-                  {/* Conteúdo */}
-                  <div className={`p-6 ${post.imageUrl ? 'md:w-2/3' : 'w-full'}`}>
-                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
-                      <div className="flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span>{new Date(post.publishedAt || post.createdAt).toLocaleDateString('pt-BR')}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                        <span>{hotel.name}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span>{hotel.city}, {hotel.state}</span>
-                      </div>
-                    </div>
-                    
-                    <h2 className="text-xl font-semibold text-gray-900 mb-3 hover:text-blue-600 transition-colors">
-                      <Link href={`/${hotel.rede.slug}/${hotel.slug}/${post.slug}`}>{post.title}</Link>
-                    </h2>
-                    
-                    <p className="text-gray-600 mb-4 line-clamp-3">
-                      {post.content.replace(/<[^>]*>/g, '').substring(0, 200)}...
-                    </p>
-                    
-                    <Link 
-                      href={`/${hotel.rede.slug}/${hotel.slug}/${post.slug}`}
-                      className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                    >
-                      Ler artigo completo
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
                     </Link>
-                  </div>
-                </div>
-              </article>
-            ))
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           )}
         </div>
-      </main>
+      </div>
     </div>
   )
 }
@@ -291,6 +196,6 @@ export async function generateMetadata({ params }: PageProps) {
 
   return {
     title: `${hotel.name} - ${hotel.rede.name}`,
-    description: `Confira os posts e novidades do ${hotel.name} em ${hotel.city}, ${hotel.state}. ${hotel.travelType} • ${hotel.audience}`
+    description: `Descubra histórias e experiências sobre ${hotel.name} em ${hotel.city}, ${hotel.state}.`
   }
 }

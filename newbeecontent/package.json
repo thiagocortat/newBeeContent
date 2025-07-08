@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/setup-dev-schema.js && npx prisma generate && next dev --turbopack",
-    "build": "node scripts/deploy-production.js",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "seed": "npx tsx prisma/seed.ts",
